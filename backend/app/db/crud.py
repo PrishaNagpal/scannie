@@ -45,3 +45,21 @@ def update_scan_status(
     db.commit()
     db.refresh(scan)
     return scan
+def create_finding(db: Session, finding_data: dict, scan_id: str) -> Finding:
+    finding = Finding()
+    finding.id = str(uuid.uuid4())
+    finding.scan_id = scan_id
+    finding.target = finding_data["target"]
+    finding.source_plugin = finding_data["source_plugin"]
+    finding.category = finding_data["category"]
+    finding.port = finding_data.get("port")
+    finding.service = finding_data.get("service")
+    finding.service_version = finding_data.get("service_version")
+    finding.raw_severity = finding_data.get("raw_severity")
+    finding.description = finding_data["description"]
+    finding.evidence = finding_data.get("evidence")
+    finding.discovered_at = finding_data.get("discovered_at", datetime.utcnow())
+    db.add(finding)
+    db.commit()
+    db.refresh(finding)
+    return finding
