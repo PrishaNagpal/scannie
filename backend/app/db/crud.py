@@ -63,3 +63,19 @@ def create_finding(db: Session, finding_data: dict, scan_id: str) -> Finding:
     db.commit()
     db.refresh(finding)
     return finding
+def update_finding_ai_results(
+    db: Session,
+    finding_id: str,
+    ai_priority: str,
+    ai_reasoning: str,
+    suggested_fix: str
+) -> Optional[Finding]:
+    finding = db.query(Finding).filter(Finding.id == finding_id).first()
+    if not finding:
+        return None
+    finding.ai_priority = ai_priority
+    finding.ai_reasoning = ai_reasoning
+    finding.suggested_fix = suggested_fix
+    db.commit()
+    db.refresh(finding)
+    return finding
