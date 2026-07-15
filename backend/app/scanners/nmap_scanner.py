@@ -13,7 +13,7 @@ def run_nmap_scan(target: str) -> List[Dict[str, Any]]:
         # -sV = service version detection
         # --open = only show open ports
         # -T4 = faster scan timing
-        scanner.scan(target, arguments="-sV --open -T4")
+        scanner.scan(target, arguments="-sT -sV -Pn --open -T4")
     except Exception as e:
         raise RuntimeError(f"nmap scan failed: {str(e)}")
 
