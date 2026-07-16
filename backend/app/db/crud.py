@@ -79,3 +79,17 @@ def update_finding_ai_results(
     db.commit()
     db.refresh(finding)
     return finding
+def update_finding_correlation(
+    db: Session,
+    finding_id: str,
+    correlation_group_id: str,
+    correlation_reason: str
+) -> Optional[Finding]:
+    finding = db.query(Finding).filter(Finding.id == finding_id).first()
+    if not finding:
+        return None
+    finding.correlation_group_id = correlation_group_id
+    finding.correlation_reason = correlation_reason
+    db.commit()
+    db.refresh(finding)
+    return finding
