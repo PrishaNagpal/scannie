@@ -5,6 +5,8 @@ from app.scanners.tls_scanner import run_tls_scan
 from app.scanners.web_scanner import run_web_scan
 from app.agents.priority_agent import run_priority_agent
 import socket
+from app.agents.correlation_engine import run_correlation_engine
+from app.db.crud import update_finding_correlation
 
 def run_full_scan(scan_id: str, target: str, plugins_used: list):
     db = SessionLocal()
@@ -65,7 +67,7 @@ def run_full_scan(scan_id: str, target: str, plugins_used: list):
 
         print(f"Saved {len(saved_findings)} findings. Running AI triage...")
 
-        # Step 5: Run AI triage on each finding
+# Step 5: Run AI triage on each finding
         for saved_finding in saved_findings:
             try:
                 finding_dict = {
@@ -95,6 +97,21 @@ def run_full_scan(scan_id: str, target: str, plugins_used: list):
             except Exception as e:
                 print(f"AI triage failed for finding {saved_finding.id}: {e}")
                 continue
+
+        # Step 6: Run correlation engine
+        print("Running correlation engine...")
+        try:
+            correlations = run_correlation_engine(saved_findings)
+            for correlation in correlations:
+                update_finding_correlation(
+                    db,
+                    correlation["finding_id"],
+                    correlation["correlation_group_id"],
+                    correlation["correlation_reason"]
+                )
+            print(f"Correlation engine found {len(correlations)} correlations")
+        except Exception as e:
+            print(f"Correlation engine failed: {e}")
 
         print(f"Scan {scan_id} complete. Total findings: {len(saved_findings)}")
         update_scan_status(db, scan_id, "completed")

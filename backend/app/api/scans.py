@@ -11,7 +11,9 @@ from app.db.crud import (
 )
 from app.schemas.scan import ScanCreate, ScanResponse
 from app.schemas.finding import FindingResponse
-
+from app.agents.report_agent import generate_report
+from app.agents.correlation_engine import run_correlation_engine
+from app.db.crud import update_finding_correlation
 router = APIRouter(prefix="/scans", tags=["scans"])
 
 @router.post("/", response_model=ScanResponse)
@@ -71,3 +73,71 @@ def get_scan_findings(scan_id: str, db: Session = Depends(get_db)):
             detail=f"Scan {scan_id} not found"
         )
     return get_findings_by_scan(db, scan_id)
+@router.get("/{scan_id}/correlations")
+def get_correlations(scan_id: str, db: Session = Depends(get_db)):
+    scan = get_scan(db, scan_id)
+    if not scan:
+        raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
+
+    findings = get_findings_by_scan(db, scan_id)
+
+    # Run correlation engine
+    correlations = run_correlation_engine(findings)
+
+    # Save correlation results to DB
+    for correlation in correlations:
+        update_finding_correlation(
+            db,
+            correlation["finding_id"],
+            correlation["correlation_group_id"],
+            correlation["correlation_reason"]
+        )
+
+    # Group by correlation_group_id for response
+    groups = {}
+    for finding in findings:
+        if finding.correlation_group_id:
+            group_id = finding.correlation_group_id
+            if group_id not in groups:
+                groups[group_id] = {
+                    "correlation_group_id": group_id,
+                    "correlation_reason": finding.correlation_reason,
+                    "findings": []
+                }
+            groups[group_id]["findings"].append({
+                "id": finding.id,
+                "description": finding.description,
+                "ai_priority": finding.ai_priority,
+                "category": finding.category
+            })
+
+    return list(groups.values())
+
+
+@router.get("/{scan_id}/report")
+def get_report(scan_id: str, db: Session = Depends(get_db)):
+    scan = get_scan(db, scan_id)
+    if not scan:
+        raise HTTPException(status_code=404, detail=f"Scan {scan_id} not found")
+
+    findings = get_findings_by_scan(db, scan_id)
+
+    scan_dict = {
+        "target": scan.target,
+        "created_at": str(scan.created_at),
+        "plugins_used": scan.plugins_used
+    }
+
+    finding_dicts = [{
+        "description": f.description,
+        "ai_priority": f.ai_priority,
+        "raw_severity": f.raw_severity,
+        "ai_reasoning": f.ai_reasoning,
+        "suggested_fix": f.suggested_fix,
+        "category": f.category,
+        "port": f.port,
+        "service": f.service
+    } for f in findings]
+
+    report = generate_report(scan_dict, finding_dicts)
+    return report
