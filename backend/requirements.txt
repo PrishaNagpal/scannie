@@ -13,3 +13,4 @@ httpx
 python-nmap
 requests
 groq
+bcrypt==4.0.1
