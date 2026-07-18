@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg-primary: #0a0e1a;
+  --color-bg-secondary: #0f1629;
+  --color-bg-tertiary: #1a2035;
+  --color-bg-elevated: #1e2640;
+  --color-accent-primary: #00d4ff;
+  --color-accent-secondary: #7c3aed;
+  --color-severity-critical: #ff3b3b;
+  --color-severity-high: #ff6b35;
+  --color-severity-medium: #f59e0b;
+  --color-severity-low: #10b981;
+  --color-severity-info: #6b7280;
+  --color-status-pending: #6b7280;
+  --color-status-running: #3b82f6;
+  --color-status-completed: #10b981;
+  --color-status-failed: #ef4444;
+  --color-border-primary: #1e2d4a;
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #475569;
+  --color-text-accent: #00d4ff;
+  --font-family-sans: 'Inter', sans-serif;
+  --font-family-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: #0a0e1a;
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0f1629; }
+::-webkit-scrollbar-thumb { background: #1a2035; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #00d4ff; }
+
+.card {
+  background: #0f1629;
+  border: 1px solid #1e2d4a;
+  border-radius: 8px;
+  padding: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.1), 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.btn-primary {
+  background: #00d4ff;
+  color: #0a0e1a;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-primary:hover { background: #00bceb; }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid #00d4ff;
+  color: #00d4ff;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-secondary:hover { background: rgba(0, 212, 255, 0.1); }
+
+.input-field {
+  background: #1a2035;
+  border: 1px solid #1e2d4a;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.badge-critical {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: rgba(255,59,59,0.15); color: #ff3b3b;
+  border: 1px solid rgba(255,59,59,0.3);
+}
+
+.badge-high {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: rgba(255,107,53,0.15); color: #ff6b35;
+  border: 1px solid rgba(255,107,53,0.3);
+}
+
+.badge-medium {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: rgba(245,158,11,0.15); color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+.badge-low {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: rgba(16,185,129,0.15); color: #10b981;
+  border: 1px solid rgba(16,185,129,0.3);
+}
+
+.badge-info {
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: rgba(107,114,128,0.15); color: #6b7280;
+  border: 1px solid rgba(107,114,128,0.3);
+}
+
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+}
