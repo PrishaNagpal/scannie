@@ -50,7 +50,7 @@ def trigger_scan(
 
     return scan
 
-@router.get("/", response_model=List[ScanResponse])
+@router.get("/")
 def list_scans(db: Session = Depends(get_db)):
     return get_all_scans(db)
 

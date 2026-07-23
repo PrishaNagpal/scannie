@@ -1,11 +1,9 @@
-import { Priority } from "../../types"
-
 interface BadgeProps {
   priority: string | null
   size?: "sm" | "md"
 }
 
-export function PriorityBadge({ priority, size = "sm" }: BadgeProps) {
+export function PriorityBadge({ priority }: BadgeProps) {
   const p = priority?.toLowerCase() || "info"
 
   const classMap: Record<string, string> = {

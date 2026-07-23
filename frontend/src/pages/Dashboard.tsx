@@ -29,6 +29,7 @@ export function Dashboard() {
   const completed = scans.filter(s => s.status === "completed").length
   const running = scans.filter(s => s.status === "running").length
   const failed = scans.filter(s => s.status === "failed").length
+  const pending = scans.filter(s => s.status === "pending").length
 
   return (
     <div>
@@ -86,10 +87,10 @@ export function Dashboard() {
             <Clock className="w-8 h-8" style={{ color: "#3b82f6" }} />
             <div>
               <p className="text-2xl font-bold" style={{ color: "#e2e8f0" }}>
-                {running}
+                {running + pending}
               </p>
               <p className="text-xs" style={{ color: "#94a3b8" }}>
-                Running
+                In Progress
               </p>
             </div>
           </div>
@@ -147,7 +148,7 @@ export function Dashboard() {
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid #1e2d4a" }}>
-                {["Target", "Status", "Plugins", "Started", ""].map(h => (
+                {["Target", "Status", "Findings", "Plugins", "Started", ""].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-xs font-medium"
                       style={{ color: "#475569" }}>
                     {h}
@@ -177,6 +178,25 @@ export function Dashboard() {
                     <StatusBadge status={scan.status} />
                   </td>
                   <td className="px-5 py-4">
+                    <span style={{
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      fontFamily: "JetBrains Mono, monospace",
+                      color: (scan.findings_count ?? 0) > 0
+                        ? "#ff6b35"
+                        : "#475569"
+                    }}>
+                      {scan.findings_count ?? 0}
+                      <span style={{
+                        color: "#475569",
+                        fontWeight: 400,
+                        fontSize: "11px"
+                      }}>
+                        {" "}findings
+                      </span>
+                    </span>
+                  </td>
+                  <td className="px-5 py-4">
                     <div className="flex gap-1 flex-wrap">
                       {scan.plugins_used.map(p => (
                         <span key={p}
@@ -192,7 +212,7 @@ export function Dashboard() {
                     </div>
                   </td>
                   <td className="px-5 py-4 text-sm" style={{ color: "#94a3b8" }}>
-                    {new Date(scan.created_at).toLocaleDateString("en-IN", {
+                    {new Date(scan.created_at + "Z").toLocaleDateString("en-IN", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
