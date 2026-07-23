@@ -9,6 +9,7 @@ export interface Scan {
   created_at: string
   completed_at: string | null
   error_message: string | null
+  findings_count: number
 }
 
 export interface Finding {

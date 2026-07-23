@@ -5,6 +5,7 @@ from app.models.finding import Finding
 from app.schemas.scan import ScanCreate
 import uuid
 from datetime import datetime
+from sqlalchemy import func
 
 def create_scan(db: Session, scan_data: ScanCreate) -> Scan:
     scan = Scan()
@@ -22,8 +23,30 @@ def create_scan(db: Session, scan_data: ScanCreate) -> Scan:
 def get_scan(db: Session, scan_id: str) -> Optional[Scan]:
     return db.query(Scan).filter(Scan.id == scan_id).first()
 
-def get_all_scans(db: Session) -> List[Scan]:
-    return db.query(Scan).order_by(Scan.created_at.desc()).all()
+def get_all_scans(db: Session) -> List[dict]:
+    results = db.query(
+        Scan,
+        func.count(Finding.id).label("findings_count")
+    ).outerjoin(
+        Finding, Finding.scan_id == Scan.id
+    ).group_by(Scan.id).order_by(Scan.created_at.desc()).all()
+
+    scans_with_count = []
+    for scan, count in results:
+        scan_dict = {
+            "id": scan.id,
+            "target": scan.target,
+            "status": scan.status,
+            "plugins_used": scan.plugins_used,
+            "consent_confirmed": scan.consent_confirmed,
+            "created_at": scan.created_at,
+            "completed_at": scan.completed_at,
+            "error_message": scan.error_message,
+            "findings_count": count
+        }
+        scans_with_count.append(scan_dict)
+
+    return scans_with_count
 
 def get_findings_by_scan(db: Session, scan_id: str) -> List[Finding]:
     return db.query(Finding).filter(Finding.scan_id == scan_id).all()

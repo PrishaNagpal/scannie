@@ -16,6 +16,7 @@ class ScanResponse(BaseModel):
     created_at: datetime
     completed_at: Optional[datetime] = None
     error_message: Optional[str] = None
+    findings_count: Optional[int] = 0
 
     class Config:
         from_attributes = True

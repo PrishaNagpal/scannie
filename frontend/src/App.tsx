@@ -4,6 +4,7 @@ import { Dashboard } from "./pages/Dashboard"
 import { NewScan } from "./pages/NewScan"
 import { ScanResults } from "./pages/ScanResults"
 import { Login } from "./pages/Login"
+import { History } from "./pages/History"
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("scannie_token")
@@ -16,30 +17,18 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/scan/new"
-          element={
-            <ProtectedRoute>
-              <NewScan />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/scan/:scanId"
-          element={
-            <ProtectedRoute>
-              <ScanResults />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={
+          <ProtectedRoute><Dashboard /></ProtectedRoute>
+        } />
+        <Route path="/scan/new" element={
+          <ProtectedRoute><NewScan /></ProtectedRoute>
+        } />
+        <Route path="/scan/:scanId" element={
+          <ProtectedRoute><ScanResults /></ProtectedRoute>
+        } />
+        <Route path="/history" element={
+          <ProtectedRoute><History /></ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   )
