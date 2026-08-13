@@ -1,75 +1,142 @@
-# React + TypeScript + Vite
+# Scannie — AI-Powered Network Security Scanner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Scannie is a full-stack security scanning platform that combines classic network reconnaissance tools with an AI triage layer. It scans a target for open ports, TLS/SSL misconfigurations, and web security header issues, then uses an LLM to prioritize findings against real CVE data and explain compound attack risks in plain English.
 
-Currently, two official plugins are available:
+> ⚠️ **Scan only targets you have explicit permission to scan.** Scanning systems without authorization may be illegal.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Port & Service Discovery** — wraps `nmap` for TCP port scanning and service/version detection
+- **TLS/SSL Analysis** — checks certificate expiry, self-signed certs, and weak protocol versions (TLS 1.0/1.1) using Python's `ssl` module
+- **Web Misconfiguration Scanning** — detects missing security headers (CSP, HSTS, X-Frame-Options, etc.) and exposed sensitive paths
+- **AI-Powered Triage (RAG)** — queries the NVD CVE database for service-specific vulnerabilities and injects CVSS scores + exploit descriptions into LLM prompts to generate context-aware priority scores and remediation steps
+- **Hybrid Correlation Engine** — deterministic, rule-based detection of compound attack surfaces (e.g., exposed database port + missing HSTS + outdated SSH) paired with LLM-generated plain-English risk explanations
+- **Automated Reporting** — generates executive summaries and detailed technical reports with prioritized, ranked action items; exportable as PDF
+- **Scan History** — searchable, filterable dashboard of past scans with status, findings count, and duration
+- **Async Scan Execution** — non-blocking background scans with real-time status polling from the frontend
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+**Backend:** Python, FastAPI, SQLAlchemy (ORM), Alembic (migrations), PostgreSQL, JWT Authentication
+**Frontend:** React, TypeScript, React Router
+**Scanning:** nmap, Python `ssl` module, custom web misconfiguration scanner
+**AI/LLM:** Groq (LLaMA models) for RAG-based triage and correlation reasoning
+**Other:** REST API design, async background task execution
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Architecture Overview
 
 ```
+┌─────────────┐      ┌──────────────┐      ┌─────────────────┐
+│   React     │◄────►│   FastAPI    │◄────►│   PostgreSQL     │
+│  Frontend   │ REST │   Backend    │      │   (scans, users, │
+└─────────────┘      └──────┬───────┘      │    findings)     │
+                             │              └─────────────────┘
+                 ┌───────────┼───────────┐
+                 ▼           ▼           ▼
+             ┌───────┐  ┌────────┐  ┌─────────┐
+             │ nmap  │  │  TLS   │  │   Web   │
+             │Scanner│  │Scanner │  │Misconfig│
+             └───┬───┘  └───┬────┘  └────┬────┘
+                 └──────────┼────────────┘
+                            ▼
+                 ┌────────────────────┐
+                 │  Correlation Engine │
+                 │ (rules + LLM layer) │
+                 └──────────┬──────────┘
+                            ▼
+                 ┌────────────────────┐
+                 │   AI Triage (RAG)   │
+                 │  CVE lookup + Groq  │
+                 └──────────┬──────────┘
+                            ▼
+                 ┌────────────────────┐
+                 │  Report Generator   │
+                 └────────────────────┘
+```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- PostgreSQL
+- nmap installed and available on PATH
+- A Groq API key
+
+### Backend Setup
+
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate        # Windows
+# source venv/bin/activate   # macOS/Linux
+
+pip install -r requirements.txt
+```
+
+Create a `.env` file in `backend/`:
 
 ```
+DATABASE_URL=postgresql://user:password@localhost:5432/scannie
+GROQ_API_KEY=your_groq_api_key
+JWT_SECRET=your_jwt_secret
+```
+
+Run migrations and start the server:
+
+```bash
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+
+# Create a .env file with:
+# VITE_API_URL=http://localhost:8000
+
+npm run dev
+```
+
+The app will be available at `http://localhost:5173`.
+
+---
+
+## Usage
+
+1. Sign up / log in
+2. Click **New Scan**, enter a target you have permission to scan
+3. Select scanners (Port Scanner, TLS/SSL Checker, Web Misconfig Scanner)
+4. Confirm the consent checkbox and launch the scan
+5. View findings, correlated compound risks, and the AI-generated report once the scan completes
+6. Browse past scans in **History**, with search and status filters
+
+---
+
+## Known Limitations
+
+- The AI triage layer's severity descriptions occasionally overstate CVE impact (e.g., describing a crash/SSRF bug as remote code execution) — always cross-check cited CVEs against the actual NVD entry before acting on a finding
+- CVE matching is based on service + version only; it does not account for target-specific configuration (e.g., whether a proxy setting that gates a vulnerability is actually enabled)
+- AI-generated correlation explanations are non-deterministic between runs — the underlying rule-based detection is consistent, but wording will vary slightly each time
+
+---
+
+## Roadmap
+
+- [ ] Deploy backend (Render) and frontend (Vercel)
+- [ ] Expand correlation rule set
+- [ ] Add authenticated scanning support
+- [ ] CI/CD pipeline for automated testing
+
+---
